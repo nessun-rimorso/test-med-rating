@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <title>Test</title>
+</head>
+<body class="page">
+<main class="page__wrapper">
+    <nav class="page__navigation navigation" id="myTab" role="tablist">
+        <a class="navigation__link" id="catalog-tab" data-toggle="tab" href="#catalog" role="tab">
+            Каталог</a>
+        <a class="navigation__link" id="favourites-tab" data-toggle="tab" href="#favourites" role="tab">Избранное</a>
+    </nav>
+    <div class="page__content" id="myTabContent">
+        <div class="page__tab-item page__tab-item--catalog content" id="catalog" role="tabpanel"
+             aria-labelledby="catalog-tab">
+        </div>
+        <div class="page__tab-item page__tab-item--favourites content" id="favourites" role="tabpanel"
+             aria-labelledby="favourites-tab">
+        </div>
+    </div>
+</main>
+<section class="modal" id="fullImageModal">
+    <div class="modal__popup">
+        <button class="modal__btn-close" type="button">Close</button>
+        <img src="" alt="Фото пользователя">
+    </div>
+</section>
+<script src="index.js"></script>
+</body>
+</html>

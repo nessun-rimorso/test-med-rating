@@ -1,0 +1,173 @@
+/* block page */
+
+.page__wrapper {
+    margin: 0 auto;
+    padding: 70px 0;
+
+    font-size: 20px;
+}
+
+.page__tab-item {
+    display: none;
+}
+
+.page__tab-item.active {
+    display: block;
+}
+
+.page__tab-item.active > .content__list {
+    display: block;
+}
+
+
+/* block navigation */
+
+.navigation {
+    display: flex;
+    justify-content: space-evenly;
+    align-content: center;
+    padding: 20px 0;
+}
+
+.navigation__link {
+    display: block;
+    font-size: 30px;
+}
+
+
+/* block content */
+
+.content__catalog {
+    margin: 0 40px;
+}
+
+.content__catalog > .content__list {
+    display: block;
+}
+
+.content__list {
+    display: none;
+    list-style: none;
+}
+
+.content__item.active > .content__list {
+    display: block;
+}
+
+.content__item {
+    display: block;
+    margin-bottom: 20px;
+}
+
+.content__button {
+    position: relative;
+    margin: 10px 0;
+
+    font-size: 25px;
+
+    background-color: transparent;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    transition: 300ms ease;
+}
+
+.content__button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -25px;
+    transform: translateY(-75%) rotate(-135deg);
+
+    width: 10px;
+    height: 10px;
+
+    border-bottom: 3px solid black;
+    border-left: 3px solid black;
+    transition: 300ms ease;
+}
+
+.active > .content__button::before {
+    transform: translateY(-75%) rotate(-45deg);
+}
+
+
+/* block image */
+
+.image {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.image__wrapper {
+    position: relative;
+}
+
+.image__btn-star {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+
+    width: 40px;
+    height: 40px;
+    font-size: 0;
+
+    border: none;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.image__btn-star::before {
+    content: "\2605";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    font-size: 40px;
+    color: grey;
+    transition: 300ms ease;
+}
+
+.image__btn-star.active::before {
+    color: gold;
+}
+
+.image__title {
+    width: 100%;
+    text-align: center;
+}
+
+
+/* block modal */
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 99;
+    display: none;
+}
+
+.modal.modal--show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal__popup {
+    position: relative;
+}
+
+.modal__btn-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
