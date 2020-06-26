@@ -389,6 +389,10 @@ const app = () => {
         const containerFavorites = document.querySelector(target.hash);
         const arrayFavorites = localStorageFavorites.load() ? Object.values(localStorageFavorites.load()) : null;
 
+        if (containerFavorites.children.length) {
+            containerFavorites.innerHTML = '';
+        }
+
         if (!arrayFavorites.length || !arrayFavorites) return containerFavorites.append(nullFavorites());
         let fragment = '';
         arrayFavorites.forEach((favoriteImage) => {
@@ -426,11 +430,28 @@ const app = () => {
     }
 
 
+// catalog
+
+    const addEventOnLinkCatalog = () => {
+        const linkCatalog = document.getElementById('catalog-tab');
+        linkCatalog.addEventListener('click', renderCatalog);
+    };
+
+    const renderCatalog = (event) => {
+        const { target } = event;
+        const containerCatalog = document.querySelector(target.hash);
+        if (containerCatalog.children.length) {
+            containerCatalog.innerHTML = '';
+        }
+        fetchUsers();
+    };
+
+
 // вызов функций
 
     tabs();
-    fetchUsers();
     addEventOnLinkFavorites();
+    addEventOnLinkCatalog();
 };
 
 app();
