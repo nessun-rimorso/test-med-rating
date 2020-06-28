@@ -132,7 +132,8 @@ const app = () => {
         users: {},
         albums: {},
         photos: {},
-    }
+    };
+
 
     // fetch requests
 
@@ -144,7 +145,7 @@ const app = () => {
         } catch (err) {
             gotError(err)
         }
-    }
+    };
 
     const fetchAlbums = async (userId) => {
         try {
@@ -154,7 +155,7 @@ const app = () => {
         } catch (err) {
             gotError(err)
         }
-    }
+    };
 
     const fetchPhotos = async (albumId) => {
         try {
@@ -164,14 +165,14 @@ const app = () => {
         } catch (err) {
             gotError(err)
         }
-    }
+    };
 
     const gotError = (err) => {
         throw new Error(err);
     };
 
 
-// render functions
+    // render functions
 
     const renderUsers = (items) => {
         const listFragment = renderFragmentFactory('user', items, renderItemsTemplate);
@@ -214,6 +215,8 @@ const app = () => {
         parentNode.insertAdjacentHTML('beforeend', listFragment);
     };
 
+    // templates
+
     const renderItemsTemplate = ({id, name}, templateName) => {
         return `
             <li class="content__item" data-${templateName}="${id}">
@@ -246,7 +249,8 @@ const app = () => {
     };
 
 
-// navigation links
+    // navigation links
+
     const tabs = () => {
         const handle = (e) => {
             e.preventDefault();
@@ -277,7 +281,7 @@ const app = () => {
     };
 
 
-// list disclosure
+    // list disclosure
 
     const listDisclosure = (event) => {
         event.preventDefault();
@@ -307,19 +311,10 @@ const app = () => {
             default:
                 return null;
         }
-    }
+    };
 
-    const addEventOnItems = (list, handles) => {
-        if (Array.isArray(handles)) {
-            handles.forEach((handle) => {
-                list.addEventListener('click', handle);
-            });
-        } else {
-            list.addEventListener('click', handles);
-        }
-    }
 
-// Open image
+    // Open image
 
     const openFullImage = (event) => {
         event.preventDefault();
@@ -330,15 +325,14 @@ const app = () => {
             modal.querySelector('img').setAttribute('src', fullImageUrl);
             fullImageModal.openModal();
         }
-    }
+    };
 
 
-// choose favorite
+    // choose favorite
 
     const toggleFavorite = (event) => {
         event.preventDefault();
         const { target } = event;
-        console.log(target);
         if (target.classList.contains('image__btn-star')) {
             const imageId = target.dataset['imageId'];
             target.classList.toggle('active');
@@ -346,7 +340,7 @@ const app = () => {
             image.isFavorite = !image.isFavorite;
             storeFavoriteImages(image);
         }
-    }
+    };
 
     const storeFavoriteImages = (photo) => {
         const {id, isFavorite} = photo;
@@ -376,15 +370,15 @@ const app = () => {
                 }, {});
         }
         localStorageFavorites.save(newFavoritesImages);
-    }
+    };
 
 
-// favorites
+    // favorites
 
     const addEventOnLinkFavorites = () => {
         const linkFavorites = document.getElementById('favourites-tab');
         linkFavorites.addEventListener('click', renderFavorites);
-    }
+    };
 
     const renderFavorites = (event) => {
         const { target } = event;
@@ -425,7 +419,7 @@ const app = () => {
     };
 
 
-// catalog
+    // catalog
 
     const addEventOnLinkCatalog = () => {
         const linkCatalog = document.getElementById('catalog-tab');
@@ -448,6 +442,19 @@ const app = () => {
         }
     };
 
+
+    // events
+
+    const addEventOnItems = (list, handles) => {
+        if (Array.isArray(handles)) {
+            handles.forEach((handle) => {
+                list.addEventListener('click', handle);
+            });
+        } else {
+            list.addEventListener('click', handles);
+        }
+    };
+
     const removeEventListeners = (node, eventListeners) => {
         if (Array.isArray(eventListeners)) {
             eventListeners.forEach((eventListener) => {
@@ -458,7 +465,8 @@ const app = () => {
         }
     };
 
-// вызов функций
+
+    // initial app
 
     const initApp = () => {
         addEventOnLinkFavorites();
