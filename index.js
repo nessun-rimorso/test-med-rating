@@ -1,6 +1,6 @@
 'use strict'
 
-// modal show
+// modal
 
 class Modal {
     constructor(modal) {
@@ -140,80 +140,79 @@ const app = () => {
         try {
             const res = await serviceApi.getUsers();
             state.users = res;
-            renderUsers();
+            renderUsers(res);
         } catch (err) {
-            errorFetch(err)
+            gotError(err)
         }
     }
 
     const fetchAlbums = async (userId) => {
         try {
             const res = await serviceApi.getAlbums(userId);
-            state.albums = res;
-            renderAlbums(userId);
+            state.albums = { ...state.albums, ...res };
+            renderAlbums(userId, res);
         } catch (err) {
-            errorFetch(err)
+            gotError(err)
         }
     }
 
     const fetchPhotos = async (albumId) => {
         try {
             const res = await serviceApi.getPhotos(albumId);
-            state.photos = res;
-            renderPhotos(albumId);
+            state.photos = { ...state.photos, ...res };
+            renderPhotos(albumId, res);
         } catch (err) {
-            errorFetch(err)
+            gotError(err)
         }
     }
+
+    const gotError = (err) => {
+        throw new Error(err);
+    };
 
 
 // render functions
 
-    const renderUsers = () => {
-        const users = Object.values(state.users);
-        const catalog = document.getElementById('catalog');
-        let fragment = '';
-        users.forEach((user) => {
-            const el = renderItemsTemplate(user, 'user');
-            fragment += el;
-        })
-        const listFragment = `<ul class="content__list">${fragment}</ul>`
-
-        catalog.insertAdjacentHTML('afterbegin', listFragment);
-
-        const list = catalog.querySelector('.content__list');
-        addEventOnItems(list, listDisclosure);
+    const renderUsers = (items) => {
+        const listFragment = renderFragmentFactory('user', items, renderItemsTemplate);
+        const parentNode = document.getElementById('catalog');
+        insertFragmentToParentNode(parentNode, listFragment);
+        addEventOnItems(parentNode, listDisclosure);
     };
 
-    const renderAlbums = (userId) => {
-        const albums = Object.values(state.albums);
-        if (albums.length === 0) return;
-        const li = document.querySelector(`[data-user='${userId}']`);
+    const renderAlbums = (userId, items) => {
+        const listFragment = renderFragmentFactory('album', items, renderItemsTemplate);
+        const parentNode = getParentNode({ parentName: 'user', parentId: userId });
+        insertFragmentToParentNode(parentNode, listFragment);
+    };
+
+    const renderPhotos = (albumId, items) => {
+        const listFragment = renderFragmentFactory('photo', items, renderPhotoTemplate);
+        const parentNode = getParentNode({ parentName: 'album', parentId: albumId });
+        insertFragmentToParentNode(parentNode, listFragment);
+        const catalog = document.getElementById('catalog');
+        addEventOnItems(catalog, [toggleFavorite, openFullImage]);
+    };
+
+    const renderFragmentFactory = (itemName, items, renderFunc) => {
+        const itemsArr = Object.values(items);
+        if (itemsArr.length === 0) return;
         let fragment = '';
-        albums.forEach((album) => {
-            const el = renderItemsTemplate(album, 'album');
+
+        itemsArr.forEach((item) => {
+            const el = renderFunc(item, itemName);
             fragment += el;
         })
-        const listFragment = `<ul class="content__list">${fragment}</ul>`;
-        li.insertAdjacentHTML('beforeend', listFragment);
-    }
+        return `<ul class="content__list">${fragment}</ul>`;
+    };
 
-    const renderPhotos = (albumId) => {
-        const photos = Object.values(state.photos);
-        if (photos.length === 0) return;
-        const li = document.querySelector(`[data-album='${albumId}']`);
-        let fragment = '';
-        photos.forEach((photo) => {
-            const el = renderPhotoTemplate(photo);
-            fragment += el;
-        })
-        const listFragment = `<ul class="content__list">${fragment}</ul>`;
-        li.insertAdjacentHTML('beforeend', listFragment);
+    const getParentNode = ({ parentId, parentName }) => {
+        return document.querySelector(`[data-${parentName}='${parentId}']`);
+    };
 
-        const list = li.querySelector('.content__list');
-        addEventOnItems(list, openFullImage);
-        addEventOnItems(list, toggleFavorite);
-    }
+    const insertFragmentToParentNode = (parentNode, listFragment) => {
+        parentNode.insertAdjacentHTML('beforeend', listFragment);
+    };
 
     const renderItemsTemplate = ({id, name}, templateName) => {
         return `
@@ -221,12 +220,12 @@ const app = () => {
                 <button class="content__button" type="button">${name}</button>
             </li>
         `;
-    }
+    };
 
-    const renderPhotoTemplate = ({id, title, url, thumbnailUrl, isFavorite}) => {
+    const renderPhotoTemplate = ({id, title, url, thumbnailUrl, isFavorite}, templateName) => {
         const isActive = () => isFavorite ? 'active' : '';
         return  `
-            <li class="content__item" data-photo="${id}">
+            <li class="content__item" data-${templateName}="${id}">
                 <div class="content__image image">
                     <div class="image__wrapper">
                         <button 
@@ -310,8 +309,14 @@ const app = () => {
         }
     }
 
-    const addEventOnItems = (list, handle) => {
-        list.addEventListener('click', handle)
+    const addEventOnItems = (list, handles) => {
+        if (Array.isArray(handles)) {
+            handles.forEach((handle) => {
+                list.addEventListener('click', handle);
+            });
+        } else {
+            list.addEventListener('click', handles);
+        }
     }
 
 // Open image
@@ -333,6 +338,7 @@ const app = () => {
     const toggleFavorite = (event) => {
         event.preventDefault();
         const { target } = event;
+        console.log(target);
         if (target.classList.contains('image__btn-star')) {
             const imageId = target.dataset['imageId'];
             target.classList.toggle('active');
@@ -372,10 +378,6 @@ const app = () => {
         localStorageFavorites.save(newFavoritesImages);
     }
 
-    const errorFetch = (err) => {
-        throw new Error('Что-то не так')
-    };
-
 
 // favorites
 
@@ -386,24 +388,17 @@ const app = () => {
 
     const renderFavorites = (event) => {
         const { target } = event;
+        if (target.classList.contains('active')) return;
         const containerFavorites = document.querySelector(target.hash);
+        cleanPageBeforeMount(containerFavorites);
+
         const arrayFavorites = localStorageFavorites.load() ? Object.values(localStorageFavorites.load()) : null;
-
-        if (containerFavorites.children.length) {
-            containerFavorites.innerHTML = '';
-        }
-
         if (!arrayFavorites.length || !arrayFavorites) return containerFavorites.append(nullFavorites());
-        let fragment = '';
-        arrayFavorites.forEach((favoriteImage) => {
-            const el = renderPhotoTemplate(favoriteImage);
-            fragment += el;
-        });
-        const listImages = `<ul class="content__list">${fragment}</ul>`;
-        containerFavorites.insertAdjacentHTML('afterbegin', listImages);
-        const list = containerFavorites.querySelector('.content__list');
-        addEventOnItems(list, openFullImage);
-        addEventOnItems(list, removeFavorite);
+        const listFragment = renderFragmentFactory('photo', arrayFavorites, renderPhotoTemplate);
+        insertFragmentToParentNode(containerFavorites, listFragment);
+        addEventOnItems(containerFavorites, [openFullImage, removeFavorite]);
+        const catalogContainer = document.getElementById('catalog');
+        removeEventListeners(catalogContainer, [openFullImage, removeFavorite]);
     };
 
     const removeFavorite = (event) => {
@@ -421,13 +416,13 @@ const app = () => {
         const favoriteContainer = document.getElementById('favourites');
         const photoItem = favoriteContainer.querySelector(`[data-photo="${imageId}"]`);
         photoItem.remove();
-    }
+    };
 
     const nullFavorites = () => {
         const fragment = document.createElement('h1');
         fragment.innerText = 'В избранное ничего не добавлено!';
         return fragment;
-    }
+    };
 
 
 // catalog
@@ -439,19 +434,39 @@ const app = () => {
 
     const renderCatalog = (event) => {
         const { target } = event;
+        if (target.classList.contains('active')) return;
         const containerCatalog = document.querySelector(target.hash);
-        if (containerCatalog.children.length) {
-            containerCatalog.innerHTML = '';
-        }
+        cleanPageBeforeMount(containerCatalog);
         fetchUsers();
+        const favoritesContainer = document.getElementById('favourites');
+        removeEventListeners(favoritesContainer, [openFullImage, removeFavorite]);
     };
 
+    const cleanPageBeforeMount = (node) => {
+        if (node.children.length) {
+            node.innerHTML = '';
+        }
+    };
+
+    const removeEventListeners = (node, eventListeners) => {
+        if (Array.isArray(eventListeners)) {
+            eventListeners.forEach((eventListener) => {
+                node.removeEventListener('click', eventListener);
+            });
+        } else {
+            node.removeEventListener('click', eventListeners);
+        }
+    };
 
 // вызов функций
 
-    tabs();
-    addEventOnLinkFavorites();
-    addEventOnLinkCatalog();
+    const initApp = () => {
+        addEventOnLinkFavorites();
+        addEventOnLinkCatalog();
+        tabs();
+    };
+
+    initApp();
 };
 
 app();
